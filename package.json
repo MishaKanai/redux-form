@@ -45,6 +45,9 @@
     "url": "https://github.com/redux-form/redux-form/issues"
   },
   "homepage": "https://redux-form.com/",
+  "buildDependencies": [
+    "babel-cli"
+  ],
   "dependencies": {
     "@babel/runtime": "^7.8.4",
     "es6-error": "^4.1.1",
