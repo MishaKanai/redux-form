@@ -56,6 +56,11 @@ const shouldDelete = ({ getIn }) => (state, path) => {
   return getIn(state, path) !== undefined && initialValueComparison
 }
 
+// deepEqual treats undefined, null and '' as equal. A missing value and a present one are never the same:
+// only a present key is submitted, so writing null over undefined is how a widget asks to clear a field.
+const isUnchanged = (deepEqual, current, next) =>
+  (current === undefined) === (next === undefined) && deepEqual(current, next)
+
 const isReduxFormAction = action =>
   action &&
   action.type &&
@@ -217,7 +222,7 @@ function createReducer<M, L>(structure: Structure<M, L>) {
         result = deleteInWithCleanUp(result, `values.${field}`)
       } else if (
         payload !== undefined &&
-        !deepEqual(getIn(result, `values.${field}`), payload)
+        !isUnchanged(deepEqual, getIn(result, `values.${field}`), payload)
       ) {
         // only write the value if it actually changed, so that unchanged values keep
         // their reference identity and selectors subscribed to `values` don't recompute
@@ -245,10 +250,10 @@ function createReducer<M, L>(structure: Structure<M, L>) {
       } else if (isFunction(payload)) {
         const fieldCurrentValue = getIn(state, `values.${field}`)
         const fieldNextValue = payload(fieldCurrentValue, state.values)
-        if (!deepEqual(fieldCurrentValue, fieldNextValue)) {
+        if (!isUnchanged(deepEqual, fieldCurrentValue, fieldNextValue)) {
           result = setIn(result, `values.${field}`, fieldNextValue)
         }
-      } else if (!deepEqual(getIn(result, `values.${field}`), payload)) {
+      } else if (!isUnchanged(deepEqual, getIn(result, `values.${field}`), payload)) {
         // same unchanged-value guard as in BLUR above
         result = setIn(result, `values.${field}`, payload)
       }

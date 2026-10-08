@@ -346,6 +346,22 @@ const describeChange = (reducer, expect, { fromJS, getIn }) => () => {
     expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
   })
 
+  it('should write null over a missing value on change', () => {
+    const state = reducer(
+      fromJS({ foo: { values: {}, initial: {} } }),
+      change('foo', 'myField', null)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write null over a missing value when a function payload returns null', () => {
+    const state = reducer(
+      fromJS({ foo: { values: {}, initial: {} } }),
+      change('foo', 'myField', () => null)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
   it('should set nested value on change with empty state', () => {
     const state = reducer(
       undefined,
